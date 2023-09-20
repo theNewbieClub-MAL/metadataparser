@@ -105,3 +105,5 @@ class EditionMetadata:
     """Edition title/theme emoji"""
     colors: Union[List[Color], Color, None] = None
     """Font colors used on a thread in Hex format"""
+    custom: Any = None
+    """Custom data"""

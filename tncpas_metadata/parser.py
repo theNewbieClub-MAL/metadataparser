@@ -192,5 +192,6 @@ class MetadataParser:
             staffs=staffs,
             theme_id=metadata.get('theme_id', None),
             theme_emoji=metadata.get('theme_emoji', None),
-            colors=colors or None  # type: ignore
+            colors=colors or None,  # type: ignore
+            custom=metadata.get('custom', None)
         )
