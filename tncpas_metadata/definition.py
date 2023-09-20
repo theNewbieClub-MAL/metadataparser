@@ -2,10 +2,11 @@
 
 """Definition of TNCPAS-0001 Compliance Metadata"""
 
-from typing import List, Union, Optional
 from dataclasses import dataclass
+from typing import Any, List, Optional, Union
 
 from .color import ColorConverter as Color
+from .identifier import EditionIdentifier, StaffIdentifier
 
 definitions = {
     "AVA": {
@@ -76,6 +77,7 @@ definitions = {
     },
 }
 
+
 @dataclass
 class StaffEntry:
     """Information about staff"""
@@ -85,10 +87,11 @@ class StaffEntry:
     """Total card available to choose"""
     limit: Union[int, List[int]]
     """Limit of card for each user"""
-    identifier: Optional[List[Union[str, int]]] = None
+    staff_id: Union[str, int, StaffIdentifier, None] = None
     """Staff/contributor identifier"""
     is_allow_slip: Optional[bool] = True
     """Is staff/contributor allows slip use"""
+
 
 @dataclass
 class EditionMetadata:
@@ -99,7 +102,7 @@ class EditionMetadata:
     """Maximum requests per edition"""
     staffs: List[StaffEntry]
     """List of participated staff/contributors"""
-    theme_id: Union[int, str, None] = None
+    theme_id: Union[int, str, EditionIdentifier, None] = None
     """Edition ID"""
     theme_emoji: Optional[str] = None
     """Edition title/theme emoji"""

@@ -6,8 +6,9 @@ import re
 from typing import Any, Dict, List, Optional
 
 from .color import ColorConverter
-from .definition import definitions, EditionMetadata, StaffEntry
-from .errors import NoMetadataBlockFoundError, ItemExceedsGlobalLimitError
+from .definition import EditionMetadata, StaffEntry, definitions
+from .errors import ItemExceedsGlobalLimitError, NoMetadataBlockFoundError
+from .identifier import EditionIdentifier, StaffIdentifier
 
 
 class MetadataParser:
@@ -133,7 +134,8 @@ class MetadataParser:
                     global_total_items = len(value)  # type: ignore
                 elif global_total_items != len(value):  # type: ignore
                     raise ItemExceedsGlobalLimitError(
-                        f"Invalid number of items found in metadata on key \"{keyname}\". Expected {global_total_items}, got {len(value)}."  # type: ignore
+                        f"Invalid number of items found in metadata on key \"{keyname}\".",
+                        f"Expected {global_total_items}, got {len(value)}."  # type: ignore
                     )
         # if required items are missing, raise an error
         for key, value in self.definition.items():
@@ -166,13 +168,16 @@ class MetadataParser:
         # get staff length, drop None values
         staff_length = len([v for v in metadata['staff'] if v is not None])
         staffs: List[StaffEntry] = []
-        
+
         for index in range(staff_length):
+            identifier = metadata.get('staff_id', [None])[index]
+            if identifier is not None and re.match(r'^\d{2}[A-Za-z]{3}[A-Za-z]\w{9}$', identifier):
+                identifier = StaffIdentifier(identifier)
             staffs.append(StaffEntry(
                 nickname=metadata['staff'][index],
                 available=metadata['available'][index],
                 limit=metadata['limit'][index],
-                identifier=metadata.get('identifier', [None])[index],
+                staff_id=identifier,
                 is_allow_slip=metadata.get('is_allow_slip', [True])[index]
             ))
 
@@ -184,13 +189,18 @@ class MetadataParser:
         elif isinstance(colors, str):
             colors = [ColorConverter(colors)]
         elif isinstance(colors, list):
-            colors = [ColorConverter(c) if isinstance(c, str) else c for c in colors]  # type: ignore
+            colors = [ColorConverter(c) if isinstance(  # type: ignore
+                c, str) else c for c in colors]  # type: ignore
+
+        identifier = metadata.get('theme_id', None)
+        if identifier is not None and re.match(r'^\d{4}[A-Za-z]{1}$', identifier):
+            identifier = EditionIdentifier(identifier)
 
         return EditionMetadata(
             theme=metadata['theme'],
             maximum=metadata['maximum'],
             staffs=staffs,
-            theme_id=metadata.get('theme_id', None),
+            theme_id=identifier,
             theme_emoji=metadata.get('theme_emoji', None),
             colors=colors or None,  # type: ignore
             custom=metadata.get('custom', None)

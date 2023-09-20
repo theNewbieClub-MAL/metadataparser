@@ -2,12 +2,21 @@
 
 """TNCPAS-0001 Compliance Metadata Parser Module"""
 
+from .definition import EditionMetadata, StaffEntry
+from .errors import (ItemExceedsGlobalLimitError, MissingRequiredKey,
+                     NoMetadataBlockFoundError)
+from .identifier import EditionIdentifier, StaffIdentifier
 from .parser import MetadataParser
-from .definition import EditionMetadata, StaffEntry, definitions
-from .errors import NoMetadataBlockFoundError, ItemExceedsGlobalLimitError, MissingRequiredKey
 
 __version__ = '0.1.0'
 
-__all__ = [MetadataParser, NoMetadataBlockFoundError,
-           MissingRequiredKey, ItemExceedsGlobalLimitError, EditionMetadata,
-           StaffEntry, definitions]
+__all__ = [
+    EditionIdentifier,
+    EditionMetadata,
+    ItemExceedsGlobalLimitError,
+    MetadataParser,
+    MissingRequiredKey,
+    NoMetadataBlockFoundError,
+    StaffEntry,
+    StaffIdentifier,
+]
