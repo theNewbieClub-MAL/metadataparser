@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: MIT
+
+"""Color module for tncpas_metadata."""
+
 import colorsys
 
 from typing import Tuple
@@ -36,3 +40,11 @@ class ColorConverter:
         """Convert the hex color value to hsl"""
         r, g, b = self.to_rgb
         return colorsys.rgb_to_hls(r, g, b)
+
+    def __str__(self):
+        """Return string representation of ColorConverter class."""
+        return self.hex_value
+
+    def __repr__(self):
+        """Return string representation of ColorConverter class."""
+        return self.hex_value
