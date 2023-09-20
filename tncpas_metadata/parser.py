@@ -3,7 +3,7 @@
 """TNCPAS-0001 Compliance Metadata Parser Module"""
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from .color import ColorConverter
 from .definition import EditionMetadata, StaffEntry, definitions
@@ -73,7 +73,7 @@ class MetadataParser:
                 return [int(v) if v.isdigit() else None for v in value.split('|')][:2]
             else:
                 raise ValueError(
-                    f"Invalid value {value} found in metadata on key \"{keyname}\".")
+                    f"Invalid value {value} found in metadata on key \"{keyname}\". Expected a single value, got multiple values.")
         elif value.isdigit():
             return int(value)
         elif value.lower() == 'true':
@@ -93,10 +93,10 @@ class MetadataParser:
         :return: The raw metadata.
         :rtype: List[str]
         """
-        check = re.search(r'###(METADATA|SCRAPEDATA)', self.string)
+        check = re.search(r'###METADATA', self.string)
         if check is None:
             raise NoMetadataBlockFoundError(
-                "No metadata block found in string.")
+                "No metadata block found in string. Please make sure that the string is in TNCPAS-0001 Compliance format.")
 
         block = self.string[check.start():]
         block = block.split('###')[1]
@@ -170,15 +170,20 @@ class MetadataParser:
         staffs: List[StaffEntry] = []
 
         for index in range(staff_length):
-            identifier = metadata.get('staff_id', [None])[index]
-            if identifier is not None and re.match(r'^\d{2}[A-Za-z]{3}[A-Za-z]\w{9}$', identifier):
-                identifier = StaffIdentifier(identifier)
+            identifier = metadata.get('staff_id', None)
+            if isinstance(identifier, list):
+                identifier: Union[str, int] = identifier[index]  # type: ignore
+            if identifier is not None and re.match(r'^\d{2}[A-Za-z]{3}[A-Za-z]\w{9}$', identifier):  # type: ignore
+                identifier = StaffIdentifier(identifier)  # type: ignore
+            slip = metadata.get('is_allow_slip', True)
+            if isinstance(slip, list):
+                slip: bool = slip[index]
             staffs.append(StaffEntry(
                 nickname=metadata['staff'][index],
                 available=metadata['available'][index],
                 limit=metadata['limit'][index],
-                staff_id=identifier,
-                is_allow_slip=metadata.get('is_allow_slip', [True])[index]
+                staff_id=identifier,  # type: ignore
+                is_allow_slip=slip
             ))
 
         colors = metadata.get('color', [])
@@ -193,8 +198,8 @@ class MetadataParser:
                 c, str) else c for c in colors]  # type: ignore
 
         identifier = metadata.get('theme_id', None)
-        if identifier is not None and re.match(r'^\d{4}[A-Za-z]{1}$', identifier):
-            identifier = EditionIdentifier(identifier)
+        if identifier is not None and re.match(r'^\d{4}[A-Za-z]{1}$', identifier):  # type: ignore
+            identifier = EditionIdentifier(identifier)  # type: ignore
 
         return EditionMetadata(
             theme=metadata['theme'],
