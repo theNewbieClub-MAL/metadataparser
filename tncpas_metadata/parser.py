@@ -33,6 +33,23 @@ class MetadataParser:
         if custom_definition is not None:
             self.definition.update(self.custom_definition)  # type: ignore
 
+    @staticmethod
+    def _hinter(key: str, name: str) -> str:
+        """
+        Format a hint for a key.
+        
+        :param key: The key to format hint for.
+        :type key: str
+        :param name: The name to format hint for.
+        :type name: str
+        :return: The formatted hint.
+        :rtype: str
+        """
+        hint = f'"{key}"'
+        if name != key:
+            hint = f'"{name}" ({key})'
+        return hint
+
     def _parse_value(self, key: str, value: str) -> Any:
         """
         Parse a value from a key.
@@ -66,14 +83,15 @@ class MetadataParser:
         :return: The parsed value.
         :rtype: Any
         """
-        keydef = self.definition.get(key, {})
-        keyname = keydef.get('key_name', key)
+        keydef: dict[str, Any] = self.definition.get(key, {})
+        keyname: str = keydef.get('key_name', key)
         if '|' in value:
             if key == "LIM":
                 return [int(v) if v.isdigit() else None for v in value.split('|')][:2]
             else:
+                hint = self._hinter(key, keyname)
                 raise ValueError(
-                    f"Invalid value {value} found in metadata on key \"{keyname}\". Expected a single value, got multiple values.")
+                    f"Forbidden value {value} found in metadata on key {hint}. Expected a single value, got multiple values.")
         elif value.isdigit():
             return int(value)
         elif value.lower() == 'true':
@@ -120,8 +138,8 @@ class MetadataParser:
             key = key.upper()
             value = self._parse_value(key, value)
 
-            keydef = self.definition.get(key, {})
-            keyname = keydef.get('key_name', key)
+            keydef: dict[str, Any] = self.definition.get(key, {})
+            keyname: str = keydef.get('key_name', key)
             is_global_item = keydef.get('follow_global_items', False)
 
             if self.custom_definition is not None and key in self.custom_definition:
@@ -133,16 +151,15 @@ class MetadataParser:
                 if global_total_items == 0:
                     global_total_items = len(value)  # type: ignore
                 elif global_total_items != len(value):  # type: ignore
+                    hint = self._hinter(key, keyname)
                     raise ItemExceedsGlobalLimitError(
-                        f"Invalid number of items found in metadata on key \"{keyname}\".",
+                        f"Invalid number of items found in metadata on {hint}.",
                         f"Expected {global_total_items}, got {len(value)}."  # type: ignore
                     )
         # if required items are missing, raise an error
         for key, value in self.definition.items():
-            keyname = value.get('key_name', key)
-            hint = f'"{key}"'
-            if keyname != key:
-                hint = f'"{keyname}" ({key})'
+            keyname: str = value.get('key_name', key)  # type: ignore
+            hint = self._hinter(key, keyname)
             if value.get('required', False) and keyname not in metadata:
                 raise ValueError(
                     f"Required key {hint} can not be found in metadata.")
