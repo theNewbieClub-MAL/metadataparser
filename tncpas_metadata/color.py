@@ -24,9 +24,9 @@ class ColorConverter:
     @property
     def to_rgb(self) -> Tuple[int, int, int]:
         """Convert the hex color value to rgb"""
-        r = int(self.hex_value[1:3], 16)
-        g = int(self.hex_value[3:5], 16)
-        b = int(self.hex_value[5:], 16)
+        r = self.to_dec >> 16
+        g = (self.to_dec >> 8) & 0xff
+        b = self.to_dec & 0xff
         return (r, g, b)
 
     @property
