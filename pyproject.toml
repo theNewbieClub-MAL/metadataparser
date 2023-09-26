@@ -8,9 +8,6 @@ authors = [
     {name = "nattadasu", email = "hello@nattadasu.my.id"}
 ]
 description = "A TNCPAS-0001 Compatible Metadata Parser Library in Python"
-dependencies = [
-    "typing-extensions ; python_version < '3.8'"
-]
 requires-python = ">=3.7"
 license = {text = "MIT"}
 classifiers = [

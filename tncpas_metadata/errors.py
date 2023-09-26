@@ -8,5 +8,10 @@ class NoMetadataBlockFoundError(Exception):
 class ItemExceedsGlobalLimitError(Exception):
     """Raised when an item exceeds the global limit."""
 
-class MissingRequiredKey(Exception):
+class ForbiddenListInListError(Exception):
+    """Raised when a list is found in a list other than the LIM key."""
+
+class MissingRequiredKeyError(Exception):
     """Raised when key required by parser is missing"""
+
+MissingRequiredKey = MissingRequiredKeyError

@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from .color import ColorConverter
 from .definition import EditionMetadata, StaffEntry, definitions
-from .errors import ItemExceedsGlobalLimitError, NoMetadataBlockFoundError
+from .errors import (ForbiddenListInListError, ItemExceedsGlobalLimitError,
+                     MissingRequiredKeyError, NoMetadataBlockFoundError)
 from .identifier import EditionIdentifier, StaffIdentifier
 
 
@@ -90,7 +91,7 @@ class MetadataParser:
                 return [int(v) if v.isdigit() else None for v in value.split('|')][:2]
             else:
                 hint = self._hinter(key, keyname)
-                raise ValueError(
+                raise ForbiddenListInListError(
                     f"Forbidden value {value} found in metadata on key {hint}. Expected a single value, got multiple values.")
         elif value.isdigit():
             return int(value)
@@ -161,7 +162,7 @@ class MetadataParser:
             keyname: str = value.get('key_name', key)  # type: ignore
             hint = self._hinter(key, keyname)
             if value.get('required', False) and keyname not in metadata:
-                raise ValueError(
+                raise MissingRequiredKeyError(
                     f"Required key {hint} can not be found in metadata.")
 
         if not metadata['custom']:
